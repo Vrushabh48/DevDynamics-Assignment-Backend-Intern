@@ -1,0 +1,1 @@
+{"root":["./db/src/generated/prisma/client.d.ts","./db/src/generated/prisma/default.d.ts","./db/src/generated/prisma/edge.d.ts","./db/src/generated/prisma/index.d.ts","./db/src/generated/prisma/wasm.d.ts","./db/src/generated/prisma/runtime/index-browser.d.ts","./db/src/generated/prisma/runtime/library.d.ts","./src/index.ts","./src/server.ts"],"version":"5.6.2"}

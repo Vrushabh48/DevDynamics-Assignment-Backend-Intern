@@ -13,3 +13,36 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Person {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  paid     Expense[] @relation("PaidBy")
+  splits   ExpenseSplit[]
+}
+
+model Expense {
+  id          Int            @id @default(autoincrement())
+  amount      Decimal        @db.Decimal(10, 2)
+  description String
+  paidBy      Person         @relation("PaidBy", fields: [paidById], references: [id])
+  paidById    Int
+  splits      ExpenseSplit[]
+  createdAt   DateTime       @default(now())
+}
+
+model ExpenseSplit {
+  id         Int      @id @default(autoincrement())
+  expense    Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  expenseId  Int
+  person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId   Int
+  splitType  SplitType
+  value      Decimal  @db.Decimal(10, 2) // value meaning depends on splitType
+}
+
+enum SplitType {
+  equal
+  percentage
+  exact
+}
