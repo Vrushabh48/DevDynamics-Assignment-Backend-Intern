@@ -25,6 +25,7 @@ model Expense {
   id          Int            @id @default(autoincrement())
   amount      Decimal        @db.Decimal(10, 2)
   description String
+  category    String
   paidBy      Person         @relation("PaidBy", fields: [paidById], references: [id])
   paidById    Int
   splits      ExpenseSplit[]
@@ -45,4 +46,14 @@ enum SplitType {
   equal
   percentage
   exact
+}
+
+enum Category {
+  Food
+  Travel
+  Rent
+  Utilities
+  Entertainment
+  Groceries
+  Other
 }

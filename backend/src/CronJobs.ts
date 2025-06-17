@@ -32,6 +32,7 @@ cron.schedule("1 0 * * *", async () => {
         data: {
           amount: rentAmount,
           description,
+          category: "Rent",
           paidBy: {
             connect: { id: paidByPerson.id },
           },

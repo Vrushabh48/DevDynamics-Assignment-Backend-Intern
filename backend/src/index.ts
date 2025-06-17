@@ -36,6 +36,7 @@ const expenseData = zod.object({
     amount: zod.number().positive("Amount must be greater than 0"),
     description: zod.string().min(1, "Description is required"),
     paid_by: zod.string().min(1, "Payer name is required"),
+    category: zod.enum(['Food', 'Travel', 'Rent', 'Utilities', 'Entertainment', 'Groceries', 'Other']),
     split: zod.array(splitSchema).min(1, "At least one Split is Required")
 })
 
@@ -52,7 +53,7 @@ app.post('/expenses', async (req: Request, res: Response): Promise<any> => {
                 errors: parseResult.error.format(),
             });
         }
-        const { amount, description, paid_by, split } = parseResult.data;
+        const { amount, description, paid_by, category, split } = parseResult.data;
 
         // adding new people automatically in the db
         const paidByPerson = await prisma.person.upsert({
@@ -66,6 +67,7 @@ app.post('/expenses', async (req: Request, res: Response): Promise<any> => {
             data: {
                 amount,
                 description,
+                category,
                 paidBy: {
                     connect: { id: paidByPerson.id },
                 },
@@ -109,6 +111,7 @@ const expenseUpdateSchema = zod.object({
     amount: zod.number().positive("Amount must be greater than 0"),
     description: zod.string().min(1, "Description is required"),
     paid_by: zod.string().min(1, "Payer name is required"),
+    category: zod.enum(['Food', 'Travel', 'Rent', 'Utilities', 'Entertainment', 'Groceries', 'Other']),
     split: zod.array(splitSchema).min(1, "At least one Split is Required")
 })
 
@@ -128,7 +131,7 @@ app.put('/expenses/:id', async (req: Request, res: Response): Promise<any> => {
             errors: parseResult.error.format(),
         });
     }
-    const { amount, description, paid_by, split } = parseResult.data;
+    const { amount, description, paid_by, category, split } = parseResult.data;
 
     try {
         //checking if the expense exists
@@ -149,6 +152,7 @@ app.put('/expenses/:id', async (req: Request, res: Response): Promise<any> => {
             data: {
                 amount,
                 description,
+                category,
                 paidById: paidByPerson.id,
             },
         });
@@ -327,7 +331,6 @@ app.get('/settlements', async (req: Request, res: Response): Promise<any> => {
 });
 
 
-
 /** Route to Show each person's balances (owes/owed) */
 app.get('/balances', async (req: Request, res: Response): Promise<any> => {
     try {
@@ -418,16 +421,84 @@ app.get('/balances', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
+app.get('/category-expenses', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const grouped = await prisma.expense.groupBy({
+            by: ['category'],
+            _sum: {
+                amount: true,
+            },
+        });
+
+        const total = grouped.reduce((acc, group) => acc + group._sum.amount!.toNumber(), 0);
+
+        const result = grouped.map(group => ({
+            category: group.category,
+            total: +group._sum.amount!.toFixed(2),
+            percentage: +((group._sum.amount!.toNumber() / total) * 100).toFixed(2),
+        }));
+
+        return res.status(200).json({
+            success: true,
+            total: +total.toFixed(2),
+            breakdown: result,
+        });
+    } catch (error) {
+        console.error("Category analytics error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
+
+
 /** Route to get list of all people derived from expenses */
 app.get('/people', async (req: Request, res: Response): Promise<any> => {
     try {
         const people = await prisma.person.findMany();
-        return res.status(200).json(people);
+        return res.status(200).json({ success: true, data: people, message: "List received Successfully" });
     } catch (error) {
         console.error("Settlement error:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 })
+
+app.get('/monthly-spendings', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const endDate = new Date(); // today
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+        const recentExpenses = await prisma.expense.findMany({
+            where: {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+        });
+
+        const grouped = await prisma.expense.groupBy({
+            by: ['category'],
+            where: {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        return res.status(201).json({
+            success: true, 
+            MonthlyExpenseData: recentExpenses, 
+            CategorywiseMonthlyData: grouped
+        });
+
+    } catch (error) {
+        console.error("Settlement error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
 
 app.listen(port, () => {
     console.log(`App is listening on Port ${port}`);
