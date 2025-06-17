@@ -1,7 +1,7 @@
 import express from 'express'
 import { Request, Response } from 'express';
 import zod, { number } from 'zod' //for data validation
-import { PrismaClient } from '../db/src/generated/prisma';
+import { PrismaClient } from './db/src/generated/prisma';
 import cors from 'cors';
 const prisma = new PrismaClient();
 const app = express();

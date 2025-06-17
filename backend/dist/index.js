@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.splitSchema = void 0;
 const express_1 = __importDefault(require("express"));
 const zod_1 = __importDefault(require("zod")); //for data validation
-const prisma_1 = require("../db/src/generated/prisma");
+const prisma_1 = require("./db/src/generated/prisma");
 const cors_1 = __importDefault(require("cors"));
 const prisma = new prisma_1.PrismaClient();
 const app = (0, express_1.default)();

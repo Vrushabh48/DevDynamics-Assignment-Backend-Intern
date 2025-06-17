@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
-const prisma_1 = require("../db/src/generated/prisma"); // ✅ import SplitType enum
+const prisma_1 = require("./db/src/generated/prisma"); // ✅ import SplitType enum
 const prisma = new prisma_1.PrismaClient();
 //cron job to automatically add the split of rent on the 1st of every month
 node_cron_1.default.schedule("1 0 * * *", () => __awaiter(void 0, void 0, void 0, function* () {

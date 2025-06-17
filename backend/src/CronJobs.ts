@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { PrismaClient, SplitType } from '../db/src/generated/prisma'; // ✅ import SplitType enum
+import { PrismaClient, SplitType } from './db/src/generated/prisma'; // ✅ import SplitType enum
 
 const prisma = new PrismaClient();
 
