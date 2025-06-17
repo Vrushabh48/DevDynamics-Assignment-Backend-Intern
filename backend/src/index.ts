@@ -18,7 +18,9 @@ app.get('/expenses', async (req: Request, res: Response): Promise<any> => {
         return res.status(200).json({ message: "No Expenses Found" });
     }
     return res.status(200).json({
-        expenses
+        success: true,
+        data: expenses,
+        message: "Expenses Returned Successfully."
     })
 });
 
@@ -45,7 +47,8 @@ app.post('/expenses', async (req: Request, res: Response): Promise<any> => {
         const parseResult = expenseData.safeParse(req.body);
         if (!parseResult.success) {
             return res.status(400).json({
-                message: "Invalid data.",
+                success: false,
+                message: "Invalid data",
                 errors: parseResult.error.format(),
             });
         }
@@ -120,7 +123,8 @@ app.put('/expenses/:id', async (req: Request, res: Response): Promise<any> => {
     const parseResult = expenseUpdateSchema.safeParse(req.body);
     if (!parseResult.success) {
         return res.status(400).json({
-            message: "Invalid data.",
+            success: false,
+            message: "Invalid data",
             errors: parseResult.error.format(),
         });
     }
